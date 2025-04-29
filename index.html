@@ -5,14 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>打卡系統</title>
   <style>
-    .container {
+    body {
+        font-family: Microsoft JhengHei, Times New Roman;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+    }
+    
+    /* 登入相關樣式 */
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    
+    .login-form {
+      margin-top: 20px;
+    }
+    
+    .login-form input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    
+    .login-button {
+      background-color: #4285f4;
+      color: white;
+      padding: 12px 0;
+      width: 100%;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .error-message {
+      color: #d93025;
+      margin: 10px 0;
       display: none;
     }
+    
+    /* 測試模式按鈕 */
     .test-mode-btn {
       display: block;
-      margin: 20px auto;
+      margin: 20px auto 0;
       padding: 10px 20px;
-      background-color: #4285f4;
+      background-color: #DDCFC2;
       color: white;
       border: none;
       border-radius: 4px;
@@ -20,17 +67,15 @@
       font-size: 16px;
       font-weight: bold;
     }
-    body {
-        font-family: Microsoft JhengHei, Times New Roman;
-        margin: 0;
-        padding: 0;
-        background-color: #f5f5f5;
-    }
+    
+    /* 打卡系統樣式 */
     .container {
         max-width: 500px;
         margin: 0 auto;
         padding: 20px;
+        display: none;
     }
+    
     .card {
         background: white;
         border-radius: 8px;
@@ -38,34 +83,41 @@
         padding: 20px;
         margin-bottom: 20px;
     }
-    h1 {
+    
+    h1, h2 {
         color: #333;
         text-align: center;
         margin-bottom: 30px;
     }
+    
     .time-display {
         font-size: 28px;
         font-weight: bold;
         text-align: center;
         margin: 10px 0;
     }
+    
     .status {
         text-align: center;
         font-size: 18px;
         margin: 15px 0;
         font-weight: bold;
     }
+    
     .status.clocked-in {
         color: #BECBD3;
     }
+    
     .status.clocked-out {
         color: #E3D0CC;
     }
+    
     .button-container {
         display: flex;
         justify-content: space-between;
         margin: 20px 0;
     }
+    
     button {
         padding: 12px 0;
         width: 48%;
@@ -76,51 +128,62 @@
         cursor: pointer;
         transition: background 0.3s;
     }
+    
     button:disabled {
         opacity: 0.5;
         cursor: not-allowed;
     }
+    
     .clock-in {
         background-color: #BECBD3;
         color: white;
     }
+    
     .clock-out {
         background-color: #E3D0CC;
         color: white;
     }
+    
     .settings {
         display: flex;
         align-items: center;
         margin: 15px 0;
     }
+    
     .settings label {
         margin-right: 10px;
         font-weight: bold;
     }
+    
     .settings input {
         padding: 8px;
         width: 80px;
         border: 1px solid #ddd;
         border-radius: 4px;
     }
+    
     table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
     }
+    
     table th, table td {
         padding: 10px;
         text-align: left;
         border-bottom: 1px solid #ddd;
     }
+    
     table th {
         background-color: #f2f2f2;
     }
+    
     .report-buttons {
         display: flex;
         justify-content: space-between;
         margin: 20px 0;
     }
+    
     .report-button {
         background-color: #DDCFC2;
         color: white;
@@ -131,6 +194,7 @@
         font-weight: bold;
         width: 48%;
     }
+    
     .clear-button {
         background-color: #EAE0D7;
         color: white;
@@ -142,33 +206,31 @@
         font-weight: bold;
         width: 100%;
     }
-    .login-container {
-      max-width: 400px;
-      margin: 100px auto;
-      text-align: center;
+    
+    .logout-btn {
+      background-color: #f44336;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-weight: bold;
+      width: 100%;
     }
   </style>
 </head>
 <body>
 
-  <!-- 測試模式按鈕 -->
-  <div class="login-container">
+  <!-- 登入介面 -->
+  <div class="login-container" id="login-container">
     <h2>打卡系統登入</h2>
     
-    <!-- Google 登入區域 -->
-    <div id="g_id_onload"
-         data-client_id="494511053843-50jde1jfodgsfas2d43t7a03bge6t3m0.apps.googleusercontent.com"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
-    </div>
-
-    <div class="g_id_signin"
-         data-type="standard"
-         data-size="large"
-         data-theme="outline"
-         data-text="sign_in_with"
-         data-shape="rectangular"
-         data-logo_alignment="left">
+    <div class="login-form">
+      <input type="text" id="username" placeholder="請輸入帳號">
+      <input type="password" id="password" placeholder="請輸入密碼">
+      <div class="error-message" id="error-message">帳號或密碼錯誤，請重試。</div>
+      <button class="login-button" id="login-button">登入</button>
     </div>
     
     <!-- 測試模式按鈕 -->
@@ -176,7 +238,7 @@
   </div>
 
   <!-- 打卡系統容器，登入後顯示 -->
-  <div class="container">
+  <div class="container" id="punch-container">
     <h1>打卡與薪資計算</h1>
 
     <!-- 時間顯示卡片 -->
@@ -210,6 +272,7 @@
             <button id="monthly-report-btn" class="report-button">產生月報表</button>
         </div>
         <button id="clear-data-btn" class="clear-button">清除所有資料</button>
+        <button id="logout-btn" class="logout-btn">登出系統</button>
     </div>
 
     <!-- 記錄列表卡片 -->
@@ -235,42 +298,74 @@
   </div>
 
   <script>
-    // 測試模式按鈕事件
-    document.getElementById('test-mode-btn').addEventListener('click', function() {
-      document.querySelector('.container').style.display = 'block';
-      document.querySelector('.login-container').style.display = 'none';
+    // 設定帳號密碼（你可以更改為你想要的值）
+    const CORRECT_USERNAME = "admin";
+    const CORRECT_PASSWORD = "123456";
+    
+    // DOM元素
+    const loginContainer = document.getElementById('login-container');
+    const punchContainer = document.getElementById('punch-container');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginButton = document.getElementById('login-button');
+    const errorMessage = document.getElementById('error-message');
+    const testModeBtn = document.getElementById('test-mode-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    // 登入功能
+    loginButton.addEventListener('click', function() {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      
+      if (username === CORRECT_USERNAME && password === CORRECT_PASSWORD) {
+        // 登入成功
+        loginContainer.style.display = 'none';
+        punchContainer.style.display = 'block';
+        
+        // 設置登入狀態（可使用sessionStorage讓刷新頁面後維持登入狀態）
+        sessionStorage.setItem('isLoggedIn', 'true');
+      } else {
+        // 登入失敗
+        errorMessage.style.display = 'block';
+        
+        // 3秒後隱藏錯誤訊息
+        setTimeout(() => {
+          errorMessage.style.display = 'none';
+        }, 3000);
+      }
     });
     
-    // 如果您想加入Google登入功能，保留這段代碼
-    function handleCredentialResponse(response) {
-      const id_token = response.credential;
+    // 測試模式按鈕事件
+    testModeBtn.addEventListener('click', function() {
+      loginContainer.style.display = 'none';
+      punchContainer.style.display = 'block';
       
-      // 因為沒有後端，這裡直接顯示打卡系統
-      document.querySelector('.container').style.display = 'block';
-      document.querySelector('.login-container').style.display = 'none';
+      // 標記為測試模式
+      sessionStorage.setItem('isTestMode', 'true');
+    });
+    
+    // 登出功能
+    logoutBtn.addEventListener('click', function() {
+      punchContainer.style.display = 'none';
+      loginContainer.style.display = 'block';
       
-      // 如果有後端，則使用這段代碼
-      /*
-      fetch('/verify-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_token: id_token })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.email === 'silvialin0810@gmail.com') {
-          document.querySelector('.container').style.display = 'block';
-          document.querySelector('.login-container').style.display = 'none';
-        } else {
-          alert("你沒有權限打卡！");
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert("驗證失敗！");
-      });
-      */
-    }
+      // 清除登入狀態
+      sessionStorage.removeItem('isLoggedIn');
+      sessionStorage.removeItem('isTestMode');
+      
+      // 清空輸入欄位
+      usernameInput.value = '';
+      passwordInput.value = '';
+    });
+    
+    // 檢查登入狀態（頁面載入時）
+    window.addEventListener('load', function() {
+      if (sessionStorage.getItem('isLoggedIn') === 'true' || 
+          sessionStorage.getItem('isTestMode') === 'true') {
+        loginContainer.style.display = 'none';
+        punchContainer.style.display = 'block';
+      }
+    });
 
     // DOM元素
     const currentTimeElement = document.getElementById('current-time');
@@ -349,4 +444,187 @@
         
         // 更新狀態
         statusElement.textContent = '未打卡';
-        statusElement
+        statusElement.className = 'status';
+        
+        // 禁用/啟用按鈕
+        clockInBtn.disabled = false;
+        clockOutBtn.disabled = true;
+        
+        // 更新記錄
+        let records = JSON.parse(localStorage.getItem('workRecords') || '[]');
+        if (records.length > 0) {
+            let lastRecord = records[records.length - 1];
+            lastRecord.clockOutTime = clockOutTime.toLocaleTimeString('zh-TW');
+            lastRecord.hoursWorked = timeDiff.toFixed(2);
+            lastRecord.wage = wage.toFixed(0);
+            localStorage.setItem('workRecords', JSON.stringify(records));
+        }
+        
+        // 更新顯示
+        updateRecordsDisplay();
+        
+        // 重置狀態
+        clockInTime = null;
+        isClockIn = false;
+        
+        // 顯示通知
+        alert(`成功打卡下班！時間: ${clockOutTime.toLocaleTimeString('zh-TW')}\n工作時間: ${timeDiff.toFixed(2)} 小時\n薪資: NT$${wage.toFixed(0)}`);
+    });
+
+    // 報表功能
+    weeklyReportBtn.addEventListener('click', function() {
+        generateReport('week');
+    });
+
+    monthlyReportBtn.addEventListener('click', function() {
+        generateReport('month');
+    });
+
+    // 產生報表
+    function generateReport(type) {
+        const records = JSON.parse(localStorage.getItem('workRecords') || '[]');
+        if (records.length === 0) {
+            alert('沒有工作記錄可供產生報表！');
+            return;
+        }
+        
+        const now = new Date();
+        let filteredRecords = [];
+        let totalHours = 0;
+        let totalWage = 0;
+        let reportTitle = '';
+        
+        if (type === 'week') {
+            // 計算本週的開始日期（週日）
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            startOfWeek.setHours(0, 0, 0, 0);
+            
+            reportTitle = `週報表 (${startOfWeek.toLocaleDateString('zh-TW')} 至 ${now.toLocaleDateString('zh-TW')})`;
+            
+            // 過濾本週的記錄
+            filteredRecords = records.filter(record => {
+                const recordDate = new Date(record.date);
+                return recordDate >= startOfWeek && record.clockOutTime;
+            });
+        } else if (type === 'month') {
+            // 計算本月的開始日期
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            
+            reportTitle = `月報表 (${startOfMonth.toLocaleDateString('zh-TW')} 至 ${now.toLocaleDateString('zh-TW')})`;
+            
+            // 過濾本月的記錄
+            filteredRecords = records.filter(record => {
+                const recordDate = new Date(record.date);
+                return recordDate.getMonth() === now.getMonth() && 
+                       recordDate.getFullYear() === now.getFullYear() && 
+                       record.clockOutTime;
+            });
+        }
+        
+        // 計算總時數和總薪資
+        filteredRecords.forEach(record => {
+            if (record.hoursWorked) {
+                totalHours += parseFloat(record.hoursWorked);
+                totalWage += parseFloat(record.wage);
+            }
+        });
+        
+        // 產生報表內容
+        let reportContent = `${reportTitle}\n\n`;
+        reportContent += `總工作時數: ${totalHours.toFixed(2)} 小時\n`;
+        reportContent += `總薪資: NT$${totalWage.toFixed(0)}\n\n`;
+        reportContent += '詳細記錄:\n';
+        
+        filteredRecords.forEach(record => {
+            reportContent += `日期: ${record.date}, 上班: ${record.clockInTime}, 下班: ${record.clockOutTime}, 時數: ${record.hoursWorked}, 薪資: NT$${record.wage}\n`;
+        });
+        
+        // 顯示報表
+        alert(reportContent);
+        
+        // 可選：提供下載報表功能
+        const blob = new Blob([reportContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${type === 'week' ? '週報表' : '月報表'}_${now.toLocaleDateString('zh-TW').replace(/\//g, '-')}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // 清除資料
+    clearDataBtn.addEventListener('click', function() {
+        if (confirm('確定要清除所有打卡記錄嗎？此操作無法復原！')) {
+            localStorage.removeItem('workRecords');
+            updateRecordsDisplay();
+            alert('所有記錄已清除！');
+        }
+    });
+
+    // 更新記錄顯示
+    function updateRecordsDisplay() {
+        const records = JSON.parse(localStorage.getItem('workRecords') || '[]');
+        // 清空表格
+        recordsBody.innerHTML = '';
+        
+        // 倒序顯示最近的記錄（最多顯示5條）
+        const recentRecords = [...records].reverse().slice(0, 5);
+        
+        // 添加記錄到表格
+        recentRecords.forEach(record => {
+            const row = document.createElement('tr');
+            
+            const dateCell = document.createElement('td');
+            dateCell.textContent = record.date;
+            row.appendChild(dateCell);
+            
+            const clockInCell = document.createElement('td');
+            clockInCell.textContent = record.clockInTime;
+            row.appendChild(clockInCell);
+            
+            const clockOutCell = document.createElement('td');
+            clockOutCell.textContent = record.clockOutTime || '--';
+            row.appendChild(clockOutCell);
+            
+            const hoursCell = document.createElement('td');
+            hoursCell.textContent = record.hoursWorked ? `${record.hoursWorked} 小時` : '--';
+            row.appendChild(hoursCell);
+            
+            const wageCell = document.createElement('td');
+            wageCell.textContent = record.wage ? `NT$${record.wage}` : '--';
+            row.appendChild(wageCell);
+            
+            recordsBody.appendChild(row);
+        });
+    }
+
+    // 初始化記錄顯示
+    updateRecordsDisplay();
+
+    // 檢查是否正在打卡中（頁面刷新後恢復狀態）
+    function checkClockInStatus() {
+        const records = JSON.parse(localStorage.getItem('workRecords') || '[]');
+        if (records.length > 0) {
+            const lastRecord = records[records.length - 1];
+            if (lastRecord.clockInTime && !lastRecord.clockOutTime) {
+                // 恢復打卡中狀態
+                clockInTime = new Date(lastRecord.date + ' ' + lastRecord.clockInTime);
+                isClockIn = true;
+                
+                // 更新UI
+                statusElement.textContent = `上班中 - 打卡時間: ${lastRecord.clockInTime}`;
+                statusElement.className = 'status clocked-in';
+                clockInBtn.disabled = true;
+                clockOutBtn.disabled = false;
+            }
+        }
+    }
+
+    // 頁面載入時檢查打卡狀態
+    checkClockInStatus();
+  </script>
+</body>
+</html>
