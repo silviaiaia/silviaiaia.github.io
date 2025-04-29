@@ -227,7 +227,7 @@
   <!-- 打卡系統容器，登入後顯示 -->
   <div class="container" id="punch-container">
     <h1>打卡 ⏳</h1>
-    <div> v2.3 </div>
+    <div> v3 </div>
 
     <!-- 時間顯示卡片 -->
     <div class="card">
@@ -382,6 +382,17 @@
     updateCurrentTime();
     setInterval(updateCurrentTime, 1000);
 
+    // 將小時數向下取整到最接近的0.5小時（未滿半小時不計）
+    function roundToHalfHour(hours) {
+        // 將小時乘以2，向下取整，再除以2，得到0.5小時的倍數
+        return Math.floor(hours * 2) / 2;
+    }
+
+    // 將薪資四捨五入到最接近的100倍數
+    function roundToHundred(wage) {
+        return Math.round(wage / 100) * 100;
+    }
+
     // 上班打卡
     clockInBtn.addEventListener('click', function() {
         clockInTime = new Date();
@@ -420,7 +431,12 @@
         const clockOutTime = new Date();
         const timeDiff = (clockOutTime - clockInTime) / 1000 / 60 / 60; // 小時
         const hourlyRate = parseFloat(hourlyRateInput.value);
-        const wage = timeDiff * hourlyRate;
+        
+        // 將工時四捨五入到最接近的0.5小時
+        const roundedHours = roundToHalfHour(timeDiff);
+        
+        // 計算薪資並四捨五入到最接近的100倍數
+        const wage = roundToHundred(roundedHours * hourlyRate);
         
         // 更新狀態
         statusElement.textContent = '未打卡';
@@ -435,7 +451,7 @@
         if (records.length > 0) {
             let lastRecord = records[records.length - 1];
             lastRecord.clockOutTime = clockOutTime.toLocaleTimeString('zh-TW');
-            lastRecord.hoursWorked = timeDiff.toFixed(2);
+            lastRecord.hoursWorked = roundedHours.toFixed(1);
             lastRecord.wage = wage.toFixed(0);
             localStorage.setItem('workRecords', JSON.stringify(records));
         }
@@ -448,7 +464,7 @@
         isClockIn = false;
         
         // 顯示通知
-        alert(`成功打卡下班！時間: ${clockOutTime.toLocaleTimeString('zh-TW')}\n工作時間: ${timeDiff.toFixed(2)} 小時\n薪資: NT$${wage.toFixed(0)}`);
+        alert(`成功打卡下班！時間: ${clockOutTime.toLocaleTimeString('zh-TW')}\n實際工作時間: ${timeDiff.toFixed(2)} 小時\n計算工時: ${roundedHours.toFixed(1)} 小時\n薪資: NT${wage.toFixed(0)}`);
     });
 
     // 報表功能
@@ -512,7 +528,7 @@
         
         // 產生報表內容
         let reportContent = `${reportTitle}\n\n`;
-        reportContent += `總工作時數: ${totalHours.toFixed(2)} 小時\n`;
+        reportContent += `總工作時數: ${totalHours.toFixed(1)} 小時\n`;
         reportContent += `總薪資: NT$${totalWage.toFixed(0)}\n\n`;
         reportContent += '詳細記錄:\n';
         
