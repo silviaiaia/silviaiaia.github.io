@@ -227,13 +227,7 @@
   <!-- 打卡系統容器，登入後顯示 -->
   <div class="container" id="punch-container">
     <h1>打卡 ⏳</h1>
-    // 版本號
-    const versionText = document.createElement('div');
-    versionText.textContent = 'v3.5';
-    versionText.style.textAlign = 'center';
-    versionText.style.marginBottom = '20px';
-    document.getElementById('punch-container').insertBefore(versionText, document.getElementById('punch-container').firstChild.nextSibling);
-
+    <div>v3</div>
     <!-- 時間顯示卡片 -->
     <div class="card">
         <div>當前時間</div>
@@ -586,7 +580,7 @@
 
     // 清除資料
     clearDataBtn.addEventListener('click', function() {
-        if (confirm('確定要清除所有打卡記錄嗎？\n此操作無法復原！')) {
+        if (confirm('確定要清除所有打卡記錄嗎？此操作無法復原！')) {
             localStorage.removeItem('workRecords');
             updateRecordsDisplay();
             alert('所有記錄已清除！');
