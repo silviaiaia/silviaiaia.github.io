@@ -6,7 +6,26 @@
     <title>打卡系統</title>
 
      <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      function handleCredentialResponse(response) {
+        const id_token = response.credential;
+    // 解碼 ID Token 查看使用者資訊
+        const payload = JSON.parse(atob(id_token.split('.')[1]));
+        const userEmail = payload.email;
 
+        if (userEmail === "your.email@example.com") {
+          alert("歡迎登入！");
+      // 這裡可以開啟打卡功能
+        } else {
+          alert("你沒有權限進行打卡！");
+      // 或自動登出
+        }
+     }
+    </script>
+
+</head>
+<body>
+    
 <div id="g_id_onload"
      data-client_id="494511053843-50jde1jfodgsfas2d43t7a03bge6t3m0.apps.googleusercontent.com"
      data-login_uri="https://silviaiaia.github.io"
@@ -22,23 +41,7 @@
      data-shape="rectangular"
      data-logo_alignment="left">
 </div>
-
-<script>
-  function handleCredentialResponse(response) {
-    const id_token = response.credential;
-    // 解碼 ID Token 查看使用者資訊
-    const payload = JSON.parse(atob(id_token.split('.')[1]));
-    const userEmail = payload.email;
-
-    if (userEmail === "your.email@example.com") {
-      alert("歡迎登入！");
-      // 這裡可以開啟打卡功能
-    } else {
-      alert("你沒有權限進行打卡！");
-      // 或自動登出
-    }
-  }
-</script>
+<body>
      
     <style>
         body {
