@@ -417,18 +417,9 @@
         if (!isClockIn || !clockInTime) return;
         
         const clockOutTime = new Date();
-    
-        // 確保 clockInTime 是日期物件
-        let clockInTimeObj = clockInTime;
-        if (!(clockInTimeObj instanceof Date) || isNaN(clockInTimeObj.getTime())) {
-        // 如果不是有效的日期物件，嘗試轉換
-        alert('打卡時間格式錯誤，請重新打卡');
-        return;
-    }
-    
-    const timeDiff = (clockOutTime - clockInTimeObj) / 1000 / 60 / 60; // 小時
-    const hourlyRate = parseFloat(hourlyRateInput.value);
-    const wage = timeDiff * hourlyRate;
+        const timeDiff = (clockOutTime - clockInTime) / 1000 / 60 / 60; // 小時
+        const hourlyRate = parseFloat(hourlyRateInput.value);
+        const wage = timeDiff * hourlyRate;
         
         // 更新狀態
         statusElement.textContent = '未打卡';
@@ -598,21 +589,9 @@
         if (records.length > 0) {
             const lastRecord = records[records.length - 1];
             if (lastRecord.clockInTime && !lastRecord.clockOutTime) {
-                // 將字符串轉換為日期物件
-            const dateParts = lastRecord.date.split('/');
-            const timeParts = lastRecord.clockInTime.split(':');
-            
-            // 組裝日期物件 (注意：月份是從0開始計算的)
-            clockInTime = new Date(
-                parseInt(dateParts[0]), 
-                parseInt(dateParts[1]) - 1, 
-                parseInt(dateParts[2]),
-                parseInt(timeParts[0]),
-                parseInt(timeParts[1]),
-                parseInt(timeParts[2])
-            );
-            
-            isClockIn = true;
+                // 恢復打卡中狀態
+                clockInTime = new Date(lastRecord.date + ' ' + lastRecord.clockInTime);
+                isClockIn = true;
                 
                 // 更新UI
                 statusElement.textContent = `上班中 - 打卡時間: ${lastRecord.clockInTime}`;
