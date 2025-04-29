@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡易打卡系統</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .time-display {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .status {
+            text-align: center;
+            font-size: 18px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .status.clocked-in {
+            color: #4CAF50;
+        }
+        .status.clocked-out {
+            color: #F44336;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        button {
+            padding: 12px 0;
+            width: 48%;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .clock-in {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .clock-out {
+            background-color: #F44336;
+            color: white;
+        }
+        .settings {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        .settings label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .settings input {
+            padding: 8px;
+            width: 80px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        table th {
+            background-color: #f2f2f2;
+        }
+        .report-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .report-button {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 48%;
+        }
+        .clear-button {
+            background-color: #FF9800;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>簡易打卡與薪資計算</h1>
+
+        <!-- 時間顯示卡片 -->
+        <div class="card">
+            <div>當前時間</div>
+            <div class="time-display" id="current-time">00:00:00</div>
+            <div class="status" id="status">未打卡</div>
+        </div>
+
+        <!-- 時薪設置卡片 -->
+        <div class="card">
+            <div>設置</div>
+            <div class="settings">
+                <label for="hourly-rate">時薪 (NT$):</label>
+                <input type="number" id="hourly-rate" value="180" min="1">
+            </div>
+        </div>
+
+        <!-- 打卡按鈕卡片 -->
+        <div class="card">
+            <div class="button-container">
+                <button id="clock-in-btn" class="clock-in">打卡上班</button>
+                <button id="clock-out-btn" class="clock-out" disabled>打卡下班</button>
+            </div>
+        </div>
+
+        <!-- 報表按鈕卡片 -->
+        <div class="card">
+            <div class="report-buttons">
+                <button id="weekly-report-btn" class="report-button">產生週報表</button>
+                <button id="monthly-report-btn" class="report-button">產生月報表</button>
+            </div>
+            <button id="clear-data-btn" class="clear-button">清除所有資料</button>
+        </div>
+
+        <!-- 記錄列表卡片 -->
+        <div class="card">
+            <h3>最近打卡記錄</h3>
+            <div id="records-container">
+                <table id="records-table">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>上班時間</th>
+                            <th>下班時間</th>
+                            <th>工時</th>
+                            <th>薪資</th>
+                        </tr>
+                    </thead>
+                    <tbody id="records-body">
+                        <!-- 記錄將在此動態加載 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const currentTimeElement = document.getElementById('current-time');
+        const statusElement = document.getElementById('status');
+        const clockInBtn = document.getElementById('clock-in-btn');
+        const clockOutBtn = document.getElementById('clock-out-btn');
+        const hourlyRateInput = document.getElementById('hourly-rate');
+        const weeklyReportBtn = document.getElementById('weekly-report-btn');
+        const monthlyReportBtn = document.getElementById('monthly-report-btn');
+        const clearDataBtn = document.getElementById('clear-data-btn');
+        const recordsBody = document.getElementById('records-body');
+
+        // 程式狀態
+        let clockInTime = null;
+        let isClockIn = false;
+
+        // 設置時薪的本地儲存
+        if (localStorage.getItem('hourlyRate')) {
+            hourlyRateInput.value = localStorage.getItem('hourlyRate');
+        }
+
+        // 保存時薪設置
+        hourlyRateInput.addEventListener('change', function() {
+            localStorage.setItem('hourlyRate', this.value);
+        });
+
+        // 更新當前時間
+        function updateCurrentTime() {
+            const now = new Date();
+            currentTimeElement.textContent = now.toLocaleTimeString('zh-TW');
+        }
+
+        // 初始化及定時更新
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 1000);
+
+        // 上班打卡
+        clockInBtn.addEventListener('click', function() {
+            clockInTime = new Date();
+            isClockIn = true;
+            
+            // 更新狀態
+            statusElement.textContent = `上班中 - 打卡時間: ${clockInTime.toLocaleTimeString('zh-TW')}`;
+            statusElement.className = 'status clocked-in';
+            
+            // 禁用/啟用按鈕
+            clockInBtn.disabled = true;
+            clockOutBtn.disabled = false;
+            
+            // 保存記錄
+            const record = {
+                date: clockInTime.toLocaleDateString('zh-TW'),
+                clockInTime: clockInTime.toLocaleTimeString('zh-TW'),
+                clockOutTime: null,
+                hoursWorked: null,
+                wage: null
+            };
+            
+            // 獲取現有記錄
+            let records = JSON.parse(localStorage.getItem('workRecords') || '[]');
+            records.push(record);
+            localStorage.setItem('workRecords', JSON.stringify(records));
+            
+            // 顯示通知
+            alert(`成功打卡上班！時間: ${clockInTime.toLocaleTimeString('zh-TW')}`);
+        });
+
+        // 下班打卡
+        clockOutBtn.addEventListener('click', function() {
+            if (!isClockIn || !clockInTime) return;
+            
+            const clockOutTime = new Date();
+            const timeDiff = (clockOutTime - clockInTime) / 1000 / 60 / 60; // 小時
+            const hourlyRate = parseFloat(hourlyRateInput.value);
+            const wage = timeDiff * hourlyRate;
+            
+            // 更新狀態
+            statusElement.textContent = '未打卡';
+            statusElement.className = 'status clocked-out';
+            
+            // 禁用/啟用按鈕
+            clockInBtn.disabled = false;
+            clockOutBtn.disabled = true;
+            
+            // 更新記錄
+            let records = JSON.parse(localStorage.getItem('workRecords') || '[]');
+            if (records.length > 0) {
+                const lastRecord = records[records.length - 1];
+                lastRecord.clockOutTime = clockOutTime.toLocaleTimeString('zh-TW');
+                lastRecord.hoursWorked = timeDiff.toFixed(2);
+                lastRecord.wage = wage.toFixed(2);
+                
+                localStorage.setItem('workRecords', JSON.stringify(records));
+            }
+            
+            // 重新加載記錄
+            loadRecords();
+            
+            // 顯示通知
+            alert(`成功打卡下班！\n工作時間: ${timeDiff.toFixed(2)} 小時\n薪資: NT$${wage.toFixed(2)}`);
+            
+            // 重置狀態
+            clockInTime = null;
+            isClockIn = false;
+        });
+
+        // 加載記錄
+        function loadRecords() {
+            // 清空表格
+            recordsBody.innerHTML = '';
+            
+            // 獲取記錄
+            let records = JSON.parse(localStorage.getItem('workRecords') || '[]');
+            
+            // 按日期排序（新到舊）
+            records.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // 僅顯示最近10條記錄
+            const recentRecords = records.slice(0, 10);
+            
+            // 添加到表格
+            recentRecords.forEach(record => {
+                const row = document.createElement('tr');
+                
+                // 日期
+                const dateCell = document.createElement('td');
+                dateCell.textContent = record.date;
+                row.appendChild(dateCell);
+                
+                // 上班時間
+                const clockInCell = document.createElement('td');
+                clockInCell.textContent = record.clockInTime;
+                row.appendChild(clockInCell);
+                
+                // 下班時間
+                const clockOutCell = document.createElement('td');
+                clockOutCell.textContent = record.clockOutTime || '-';
+                row.appendChild(clockOutCell);
+                
+                // 工時
+                const hoursCell = document.createElement('td');
+                hoursCell.textContent = record.hoursWorked ? `${record.hoursWorked}小時` : '-';
+                row.appendChild(hoursCell);
+                
+                // 薪資
+                const wageCell = document.createElement('td');
+                wageCell.textContent = record.wage ? `NT$${record.wage}` : '-';
+                row.appendChild(wageCell);
+                
+                recordsBody.appendChild(row);
+            });
+        }
+
+        // 產生報表
+        function generateReport(type) {
+            const records = JSON.parse(localStorage.getItem('workRecords') || '[]');
+            if (records.length === 0) {
+                alert('沒有可用的工作記錄');
+                return;
+            }
+            
+            // 篩選記錄
+            const today = new Date();
+            let filteredRecords = [];
+            
+            if (type === 'weekly') {
+                // 計算本週的第一天（週一）
+                const dayOfWeek = today.getDay(); // 0 為週日，1-6 為週一至週六
+                const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                const monday = new Date(today);
+                monday.setDate(today.getDate() - diff);
+                monday.setHours(0, 0, 0, 0);
+                
+                filteredRecords = records.filter(record => {
+                    const recordDate = new Date(record.date);
+                    return recordDate >= monday;
+                });
+            } else if (type === 'monthly') {
+                // 計算本月的第一天
+                const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                
+                filteredRecords = records.filter(record => {
+                    const recordDate = new Date(record.date);
+                    return recordDate >= firstDayOfMonth;
+                });
+            }
+            
+            if (filteredRecords.length === 0) {
+                alert(`選定的${type === 'weekly' ? '週' : '月'}內沒有工作記錄`);
+                return;
+            }
+            
+            // 計算總計
+            let totalHours = 0;
+            let totalWage = 0;
+            
+            filteredRecords.forEach(record => {
+                if (record.hoursWorked) {
+                    totalHours += parseFloat(record.hoursWorked);
+                }
+                if (record.wage) {
+                    totalWage += parseFloat(record.wage);
+                }
+            });
+            
+            // 顯示報表
+            const reportTitle = type === 'weekly' ? '週報表' : '月報表';
+            const reportContent = `
+                ${reportTitle}\n
+                時間範圍: ${filteredRecords[0].date} 至 ${filteredRecords[filteredRecords.length - 1].date}\n
+                總工作時數: ${totalHours.toFixed(2)} 小時\n
+                總薪資: NT$${totalWage.toFixed(2)}\n
+                ---------詳細記錄---------\n
+                ${filteredRecords.map(record => 
+                    `日期: ${record.date}\n` +
+                    `上班: ${record.clockInTime}\n` +
+                    `下班: ${record.clockOutTime || '-'}\n` +
+                    `工時: ${record.hoursWorked ? record.hoursWorked + '小時' : '-'}\n` +
+                    `薪資: ${record.wage ? 'NT$' + record.wage : '-'}\n`
+                ).join('\n')}
+            `;
+            
+            // 嘗試創建下載檔案
+            try {
+                const filename = `${type === 'weekly' ? '週報表' : '月報表'}_${today.toISOString().split('T')[0]}.txt`;
+                const blob = new Blob([reportContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                // 如果下載失敗，顯示報表
+                alert(reportContent);
+            }
+        }
+
+        // 報表按鈕事件監聽
+        weeklyReportBtn.addEventListener('click', function() {
+            generateReport('weekly');
+        });
+
+        monthlyReportBtn.addEventListener('click', function() {
+            generateReport('monthly');
+        });
+
+        // 清除數據按鈕
+        clearDataBtn.addEventListener('click', function() {
+            if (confirm('確定要清除所有打卡記錄嗎？此操作無法恢復！')) {
+                localStorage.removeItem('workRecords');
+                loadRecords();
+                alert('所有記錄已清除');
+            }
+        });
+
+        // 初始加載記錄
+        loadRecords();
+    </script>
+</body>
+</html>
