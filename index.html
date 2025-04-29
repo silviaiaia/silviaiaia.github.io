@@ -54,19 +54,7 @@
       display: none;
     }
     
-    /* 測試模式按鈕 */
-    .test-mode-btn {
-      display: block;
-      margin: 20px auto 0;
-      padding: 10px 20px;
-      background-color: #DDCFC2;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-    }
+
     
     /* 打卡系統樣式 */
     .container {
@@ -232,6 +220,9 @@
       <div class="error-message" id="error-message">帳號或密碼錯誤，請重試。</div>
       <button class="login-button" id="login-button">登入</button>
     </div>
+    
+
+  </div>
 
   <!-- 打卡系統容器，登入後顯示 -->
   <div class="container" id="punch-container">
@@ -305,7 +296,7 @@
     const passwordInput = document.getElementById('password');
     const loginButton = document.getElementById('login-button');
     const errorMessage = document.getElementById('error-message');
-    const testModeBtn = document.getElementById('test-mode-btn');
+
     const logoutBtn = document.getElementById('logout-btn');
     
     // 登入功能
@@ -331,14 +322,7 @@
       }
     });
     
-    // 測試模式按鈕事件
-    testModeBtn.addEventListener('click', function() {
-      loginContainer.style.display = 'none';
-      punchContainer.style.display = 'block';
-      
-      // 標記為測試模式
-      sessionStorage.setItem('isTestMode', 'true');
-    });
+
     
     // 登出功能
     logoutBtn.addEventListener('click', function() {
@@ -347,7 +331,7 @@
       
       // 清除登入狀態
       sessionStorage.removeItem('isLoggedIn');
-      sessionStorage.removeItem('isTestMode');
+
       
       // 清空輸入欄位
       usernameInput.value = '';
@@ -356,8 +340,7 @@
     
     // 檢查登入狀態（頁面載入時）
     window.addEventListener('load', function() {
-      if (sessionStorage.getItem('isLoggedIn') === 'true' || 
-          sessionStorage.getItem('isTestMode') === 'true') {
+      if (sessionStorage.getItem('isLoggedIn') === 'true') {
         loginContainer.style.display = 'none';
         punchContainer.style.display = 'block';
       }
