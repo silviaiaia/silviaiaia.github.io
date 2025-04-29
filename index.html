@@ -227,7 +227,7 @@
   <!-- 打卡系統容器，登入後顯示 -->
   <div class="container" id="punch-container">
     <h1>打卡 ⏳</h1>
-    <div>v3</div>
+    <div>v3.5</div>
     <!-- 時間顯示卡片 -->
     <div class="card">
         <div>當前時間</div>
@@ -375,12 +375,14 @@
     function roundToHundred(wage) {
         return Math.round(wage / 100) * 100;
     }
-
     // 更新當前時間
-    function updateCurrentTime() {
-        const now = new Date();
-        currentTimeElement.textContent = now.toLocaleTimeString('zh-TW');
-    }
+      function updatecurrenttime() {
+          const now = new Date();
+          const timeString = now.toLocaleTimeString('zh-TW');
+          document.getElementById("current-time").textContent = timeString;
+        }
+          setInterval(updatecurrenttime, 1000);
+          updatecurrenttime();
 
     // 計算工作時數，扣除午休時間（12:00-13:00）
     function calculateWorkHours(clockInTime, clockOutTime) {
