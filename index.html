@@ -1,48 +1,36 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>打卡系統</title>
-
-     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script>
-      function handleCredentialResponse(response) {
-        const id_token = response.credential;
-    // 解碼 ID Token 查看使用者資訊
-        const payload = JSON.parse(atob(id_token.split('.')[1]));
-        const userEmail = payload.email;
-
-        if (userEmail === "your.email@example.com") {
-          alert("歡迎登入！");
-      // 這裡可以開啟打卡功能
-        } else {
-          alert("你沒有權限進行打卡！");
-      // 或自動登出
-        }
-     }
-    </script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>打卡系統</title>
+  <style>
+    .container {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    
-<div id="g_id_onload"
-     data-client_id="494511053843-50jde1jfodgsfas2d43t7a03bge6t3m0.apps.googleusercontent.com"
-     data-login_uri="https://silviaiaia.github.io"
-     data-callback="handleCredentialResponse"
-     data-auto_prompt="false">
-</div>
 
-<div class="g_id_signin"
-     data-type="standard"
-     data-size="large"
-     data-theme="outline"
-     data-text="sign_in_with"
-     data-shape="rectangular"
-     data-logo_alignment="left">
-</div>
-<body>
-     
+  <!-- Google 登入區域 -->
+  <div id="g_id_onload"
+       data-client_id="你的 CLIENT_ID"
+       data-callback="handleCredentialResponse"
+       data-auto_prompt="false">
+  </div>
+
+  <div class="g_id_signin"
+       data-type="standard"
+       data-size="large"
+       data-theme="outline"
+       data-text="sign_in_with"
+       data-shape="rectangular"
+       data-logo_alignment="left">
+  </div>
+
+  <!-- 打卡系統容器，登入後顯示 -->
+  <div class="container">
+    <h2>打卡系統</h2>
     <style>
         body {
             font-family: Microsoft JhengHei, Times New Roman;
@@ -488,5 +476,40 @@
         // 初始加載記錄
         loadRecords();
     </script>
+    </div>
+
+  <script>
+    // Google 登入成功後處理
+    function handleCredentialResponse(response) {
+      const id_token = response.credential;
+
+      // 發送 id_token 到後端驗證
+      fetch('/verify-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_token: id_token })
+      })
+      .then(res => res.json())
+      .then(data => {
+        // 假設後端返回驗證通過的用戶 email
+        if (data.email === 'your.email@example.com') {
+          // 顯示打卡系統
+          alert("歡迎登入！");
+          document.querySelector('.container').style.display = 'block';
+          document.querySelector('.g_id_signin').style.display = 'none'; // 隱藏登入按鈕
+        } else {
+          // 不符合條件的用戶
+          alert("你沒有權限打卡！");
+          document.body.innerHTML = "<h2>你沒有權限打卡。</h2>";
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("驗證失敗！");
+        document.body.innerHTML = "<h2>登入驗證失敗，請稍後再試。</h2>";
+      });
+    }
+  </script>
+
 </body>
 </html>
